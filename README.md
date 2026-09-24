@@ -113,6 +113,13 @@ In Claude Code:
 
 It runs start to finish without stopping to ask questions. The one exception: if you give it nothing to review, it asks what you'd like reviewed.
 
+> 🐘 **Big folders get a lighter review.** The scanner and the copy check cover *every* file. The careful read, where it catches things like lost focus and swallowed errors, is capped at about 15 files per run. That's plenty for a normal PR. For a whole package (say, 100+ files), you'll get deeper results by reviewing a few subfolders one at a time:
+> ```
+> /grc-design-review packages/audit-planning-v2/src/components
+> /grc-design-review packages/audit-planning-v2/src/timeline
+> ```
+> The ℹ️ section always lists which files got the careful read, so you can see what was left out.
+
 ---
 
 ## 🤔 FAQ
