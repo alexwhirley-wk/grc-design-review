@@ -1,0 +1,8 @@
+diff --git a/tests/fixtures/scanner_violations.tsx b/tests/fixtures/scanner_violations.tsx
+--- a/tests/fixtures/scanner_violations.tsx
++++ b/tests/fixtures/scanner_violations.tsx
+@@ -10,1 +10,4 @@
+   <>
++    <div style={{ color: 'red' }}>inline style</div>
++    <GrcPageTitle level="h3" weight="bold">Title</GrcPageTitle>
++    <GrcPageSection insetHeader title="Deprecated" />
