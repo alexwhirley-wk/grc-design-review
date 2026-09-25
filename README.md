@@ -1,4 +1,4 @@
-# 🎀✨ grc-design-review
+# 🎀 ✨ grc-design-review
 
 > *Your friendly neighbourhood design reviewer, for anyone who's ever shipped `borderRadius: 4` and felt a little guilty about it.*
 
@@ -10,7 +10,6 @@
    │  🟡  worth a chat               │
    │  🟢  nice work, keep it up      │
    │  ℹ️   stuff I didn't look at    │
-   │        ✿ ♡ ✿                   │
    ╰─────────────────────────────────╯
 ```
 
@@ -54,19 +53,19 @@ Every report has a short header followed by the same four sections, always in th
 
 > **🔴 Violations (must fix).** Things the docs state as **requirements**: rules that say "must", "never", "always", or "Don't", or give a stated standard like "Cancel is a text-variant button". These include token and import rules, deprecated props, and made-up token names.
 >
-> > *e.g.* `Dialog.tsx:34`: the Cancel button is `outlined`. **Source:** DESIGN.md → *Primary action in a dialog footer*. **Fix:** use `variant="text"`.
+>*e.g.* `Dialog.tsx:34`: the Cancel button is `outlined`. **Source:** DESIGN.md → *Primary action in a dialog footer*. **Fix:** use `variant="text"`.
 
 > **🟡 Concerns (worth discussing).** Things the docs phrase as a **preference** ("prefer", "should", "discouraged"), plus anything that needs product or design context to judge. UI copy suggestions from the content style guide land here too, with replacement text you can paste in.
 >
-> > *e.g.* `validators.ts:14`: the error says what went wrong but not how to fix it. **Try:** `Control ID "{id}" isn't in this workspace. Check the ID and try again.`
+> *e.g.* `validators.ts:14`: the error says what went wrong but not how to fix it. **Try:** `Control ID "{id}" isn't in this workspace. Check the ID and try again.`
 
 > **🟢 Looks good.** Tricky rules the change gets *right*, so good patterns get noticed too. 💖
 >
-> > *e.g.* The Mapping step warns after the fact instead of disabling Next.
+> *e.g.* The Mapping step warns after the fact instead of disabling Next.
 
 > **ℹ️ Not checked / notes.** What the review *didn't* cover: files it skipped, checks that couldn't run, and places where two documents disagree with each other.
 >
-> > *e.g.* Shared components this PR only *uses* weren't reviewed.
+> *e.g.* Shared components this PR only *uses* weren't reviewed.
 
 **A few things are always true:**
 - **All four sections always appear**, in the same order. An empty one just says `None.`
