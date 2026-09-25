@@ -27,6 +27,10 @@ The strongest test of whether the skill is useful. Run it blind on merged ts-grc
 | 11773 | `fae673e302` | Cancel-project dialog copy conventions (mostly Figma or convention) |
 | 9160 | `17038e5c9b` | Attachment viewer: should use UnifyList, `getToken` source, padding |
 | 11794 | `18b325f9f9` | CPM import full page: Kate's content-style-guide copy comments, icon colour, redirect flow |
+| 8521 | `8704765ebd` | FRESH (added 2026-09-25): overflow-menu disabled state and tooltip copy |
+| 10171 | `abfa90ab36` | FRESH: governance program dialogs, error toasts and copy (mostly product calls) |
+| 9174 | `7fd35e4e8b` | FRESH: project/template dialogs, navigation guard, team toast conventions |
+| 8854 | `21db6e5c12` | FRESH: grid export menu, confirm dialog copy, hide export when empty |
 | 11294 | `35b7b23ee0` | Publish dialog: focus loss, error copy, long action labels |
 | 10052 | `acf6df3a4c` | Accordion: `square` prop, `overflow: hidden` clipping the focus ring, tokens |
 
@@ -36,3 +40,4 @@ The strongest test of whether the skill is useful. Run it blind on merged ts-grc
 |---|---|---|---|---|---|
 | 2026-09-24 | baseline | 12/27 (44%) | 11/13 valid, 1 wrong | 46/63 valid, 0 wrong | Misses were mostly behaviour (Esc, focus, data states) and copy by analogy. Fixes applied the same day: behaviour checklist, severity rubric, dialog/colour/`getToken` scanner checks. Rerun still needed. |
 | 2026-09-24 | + content style guide + copy pass | #11794 only: 8/10 of Kate's inline comments (was 0/10) | 2/2 valid | — | Missed: the icon colour (visual) and the "Couldn't update X" word order (it wrongly praised it). Also missed the post-import redirect (a product flow call). |
+| 2026-09-25 | + behaviour checks, severity rubric, doc-verified scanner, token catalog, content guide + copy pass | Repeat: 23.5/27 (87%); 84% without 5 leaked heuristics. Fresh: 4/5 (80%, small n) | 42/44 valid, 2 debatable, 0 wrong | Repeat 65/93 valid, 2 wrong · Fresh 24/31 valid, 0 wrong | Both wrong 🟡 recommended `radius/card` (a doc bug: DESIGN.md names a token that isn't in semantic.ts). Reports are about 2.3× longer (~3 🔴 + 12–14 🟡 per PR). Noise: embedded audit rule vs DESIGN.md button variants, copy nits on pre-existing strings, team practice diverging from docs. |
