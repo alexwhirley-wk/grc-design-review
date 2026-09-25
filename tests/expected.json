@@ -16,29 +16,19 @@
       "styled-wrapper"
     ],
     [
-      11,
-      "violation",
-      "inline-style"
-    ],
-    [
       13,
       "concern",
       "deprecated-prop"
     ],
     [
       14,
+      "concern",
+      "nested-container"
+    ],
+    [
+      14,
       "violation",
-      "sx-accumulation"
-    ],
-    [
-      15,
-      "concern",
-      "sx-accumulation"
-    ],
-    [
-      16,
-      "concern",
-      "maxheight-structural"
+      "magic-number"
     ],
     [
       17,
@@ -47,8 +37,8 @@
     ],
     [
       18,
-      "concern",
-      "sx-accumulation"
+      "violation",
+      "magic-number"
     ],
     [
       20,
@@ -74,11 +64,6 @@
       33,
       "violation",
       "theme-string-color"
-    ],
-    [
-      34,
-      "concern",
-      "inline-style-layout"
     ],
     [
       39,

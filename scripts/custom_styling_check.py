@@ -6,6 +6,7 @@ Usage:
     python3 custom_styling_check.py <path> [<path> ...]                 # files and/or directories
     python3 custom_styling_check.py <path> [<path> ...] --json          # machine-readable output
     python3 custom_styling_check.py <path> ... --diff <patch>           # tag findings introduced vs pre-existing
+    python3 custom_styling_check.py <path> ... --diff <patch> --changed-only   # report only lines the patch adds
 
     python3 custom_styling_check.py <path> ... --docs <work_dir>        # verify rule sources + load MANIFEST deprecations
     python3 custom_styling_check.py --docs <work_dir> --rules           # print rule sources / disabled checks / deprecations
@@ -97,7 +98,7 @@ class Finding:
     suggestion: Optional[str] = None
     check: str = ''      # which check produced this
     in_diff: Optional[bool] = None  # None = no --diff given
-    source: str = ''     # doc rule / audit / heuristic backing this check
+    source: str = ''     # the doc rule backing this check
 
 
 # ── Parsing helpers ───────────────────────────────────────────────────────────
@@ -256,43 +257,25 @@ LAYOUT_ONLY_PROPS = {
 }
 
 
-def check_inline_styles(source: str, filepath: str) -> list[Finding]:
-    """Flag style={} props. Visual styling inline = violation; layout-only (e.g. data-driven positioning) = concern."""
+MAGIC_PROPS = {'borderRadius', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing'}
+
+
+def check_magic_numbers(source: str, filepath: str) -> list[Finding]:
+    """Literal radius/typography values in sx or style objects. DESIGN.md → Design values: Token-driven."""
     findings = []
-    # Match style={ but not data-style or aria-style etc.
-    for m in re.finditer(r'(?<![a-zA-Z-])style=\{', source):
-        line = line_number_at(source, m.start())
-        snippet = source[max(0, m.start() - 50):m.start()].strip()
-        # Skip if it's inside a comment
-        if '//' in snippet.split('\n')[-1]:
-            continue
-        props: set[str] = set()
+    for m in re.finditer(r'(?<![a-zA-Z-])(?:sx|style)=\{', source):
         obj_start = m.end()
-        if obj_start < len(source) and source[obj_start] == '{':
-            obj_text, _ = extract_brace_content(source, obj_start)
-            props = get_top_level_prop_names(obj_text)
-            if re.fullmatch(r"\{\s*display\s*:\s*['\"]none['\"]\s*,?\s*\}", obj_text.strip()):
-                continue  # hidden element (e.g. file <input>) — not styling
-        if props and props <= LAYOUT_ONLY_PROPS:
-            findings.append(Finding(
-                file=filepath,
-                line=line,
-                severity='concern',
-                element='(inline style)',
-                message=f'Layout-only inline `style` ({", ".join(sorted(props))}).',
-                suggestion='Fine if the values are computed per element (e.g. timeline positioning, virtualized rows) or required by an MUI API; otherwise move to `sx`.',
-                check='inline-style-layout',
-            ))
+        if obj_start >= len(source) or source[obj_start] != '{':
             continue
-        findings.append(Finding(
-            file=filepath,
-            line=line,
-            severity='violation',
-            element='(inline style)',
-            message='`style={{}}` carries visual styling — bypasses the design system (no tokens, no theming, no override surface).',
-            suggestion='Move visual props to `sx={{}}` with `getToken()`. Keep only data-driven positioning inline.',
-            check='inline-style',
-        ))
+        obj_text, _ = extract_brace_content(source, obj_start)
+        base = line_number_at(source, obj_start)
+        for pm in re.finditer(r"""\b(""" + '|'.join(MAGIC_PROPS) + r""")\s*:\s*(\d+(?:\.\d+)?|['"`]\d+(?:\.\d+)?(?:px|rem|em)?['"`])""", obj_text):
+            findings.append(Finding(
+                file=filepath, line=base + obj_text[:pm.start()].count('\n'), severity='violation',
+                element='(magic number)', message=f'`{pm.group(1)}: {pm.group(2)}` is a hard-coded value.',
+                suggestion="Use getToken('radius/…') or a typography variant/token instead.",
+                check='magic-number',
+            ))
     return findings
 
 
@@ -319,113 +302,8 @@ def check_styled_wrappers(source: str, filepath: str) -> list[Finding]:
     return findings
 
 
-def check_sx_accumulation(source: str, filepath: str) -> list[Finding]:
-    """Detect structural sx property accumulation on non-GRC elements."""
-    findings = []
-
-    # Find every sx={{ occurrence
-    for m in re.finditer(r'\bsx=\{', source):
-        # The character after 'sx={' should be '{'
-        obj_start = m.end()
-        if obj_start >= len(source) or source[obj_start] != '{':
-            continue
-
-        obj_text, obj_end = extract_brace_content(source, obj_start)
-        line = line_number_at(source, m.start())
-
-        # Identify the element
-        element = preceding_tag_name(source, m.start())
-
-        # Skip GRC components (they're allowed to have complex sx)
-        if element and (element.startswith('Grc') or element not in TARGET_ELEMENTS):
-            continue
-
-        # Extract top-level structural props
-        all_props = get_top_level_prop_names(obj_text)
-        structural = all_props & STRUCTURAL_PROPS
-        count = len(structural)
-
-        if count == 0:
-            continue
-
-        # Check named anti-patterns
-        matched_pattern = None
-        for primary, also, label, suggestion in ANTI_PATTERNS:
-            if structural & primary and structural & also:
-                matched_pattern = (label, suggestion)
-                break
-
-        if matched_pattern:
-            label, suggestion = matched_pattern
-            severity = 'violation' if count >= VIOLATION_THRESHOLD else 'concern'
-            findings.append(Finding(
-                file=filepath,
-                line=line,
-                severity=severity,
-                element=element or 'unknown',
-                message=(
-                    f'`{element or "element"}` has {count} structural sx '
-                    f'propert{"ies" if count != 1 else "y"} '
-                    f'({", ".join(sorted(structural))}) matching pattern: {label}. '
-                    f'This is likely hand-rolling a GRC container component.'
-                ),
-                suggestion=suggestion,
-                check='sx-accumulation',
-            ))
-        elif count >= CONCERN_THRESHOLD:
-            severity = 'violation' if count >= VIOLATION_THRESHOLD else 'concern'
-            findings.append(Finding(
-                file=filepath,
-                line=line,
-                severity=severity,
-                element=element or 'unknown',
-                message=(
-                    f'`{element or "element"}` has {count} structural sx '
-                    f'propert{"ies" if count != 1 else "y"}: '
-                    f'{", ".join(sorted(structural))}. '
-                    f'May be recreating a GRC container pattern.'
-                ),
-                suggestion='Check packages/component-library/ for an existing component, or propose a new Bucket D component.',
-                check='sx-accumulation',
-            ))
-
-    return findings
-
-
-def check_maxheight_structural(source: str, filepath: str) -> list[Finding]:
-    """Detect maxHeight in sx on structural elements — causes brittle layout (audit finding #3, #59)."""
-    findings = []
-    for m in re.finditer(r'\bsx=\{', source):
-        obj_start = m.end()
-        if obj_start >= len(source) or source[obj_start] != '{':
-            continue
-        obj_text, _ = extract_brace_content(source, obj_start)
-        if 'maxHeight' not in obj_text:
-            continue
-        if re.search(r"overflow[XY]?\s*:\s*['\"](auto|scroll)", obj_text):
-            continue  # scroll wrapper — maxHeight is the point
-        element = preceding_tag_name(source, m.start())
-        if element and (element.startswith('Grc') or element not in TARGET_ELEMENTS):
-            continue
-        line = line_number_at(source, m.start())
-        findings.append(Finding(
-            file=filepath,
-            line=line,
-            severity='concern',
-            element=element or 'unknown',
-            message=(
-                f'`{element or "element"}` uses `maxHeight` in `sx` — this causes brittle layout: '
-                f'padding shifts when content changes height (e.g., chart vs. empty state). '
-                f'Section containers should use consistent padding, not height constraints.'
-            ),
-            suggestion='Remove maxHeight and let the container grow with its content. Use a fixed-height scroll wrapper only if the content must scroll.',
-            check='maxheight-structural',
-        ))
-    return findings
-
-
 def check_multiple_primary_buttons(source: str, filepath: str) -> list[Finding]:
-    """Flag files with many variant='contained' buttons — suggests competing primary actions (audit finding #74, #157)."""
+    """Flag files with many variant='contained' buttons — suggests competing primary actions (DESIGN.md → One primary per surface)."""
     matches = []
     for m in re.finditer(r"""variant\s*=\s*(?:"contained"|'contained'|\{['"]contained['"]\})""", source):
         line_start = source.rfind('\n', 0, m.start()) + 1
@@ -574,7 +452,7 @@ def check_mui_imports(source: str, filepath: str) -> list[Finding]:
 # Every check that enforces a written GRC rule cites the exact phrase it relies on. With --docs, the
 # scanner verifies each phrase still exists in the freshly fetched docs and DISABLES any check whose
 # source rule has changed or disappeared, so the scanner can never enforce a rule the docs dropped.
-# Checks not listed here are heuristics (no written rule to drift from) or UX-audit rules.
+# Every check is doc-backed: either listed here, or derived at runtime (MANIFEST deprecations, token catalog).
 RULE_SOURCES = {
     'mui-import': ('packages/component-library/DESIGN.md',
                    'Always import MUI components and icons from `@workiva/unify`'),
@@ -584,11 +462,8 @@ RULE_SOURCES = {
     'dialog-dismissal': ('documentation/DESIGN.md', '**Esc key** — supported'),
     'multiple-primary-buttons': ('documentation/DESIGN.md', '**One primary per surface.**'),
     'nested-container': ('packages/component-library/DESIGN.md', '**Sections and surfaces do NOT get borders.**'),
-}
-CHECK_KIND = {  # shown in reports so readers know what backs each finding
-    'maxheight-structural': 'UX audit #3, #59',
-    'inline-style': 'heuristic', 'inline-style-layout': 'heuristic',
-    'styled-wrapper': 'heuristic', 'sx-accumulation': 'heuristic',
+    'styled-wrapper': ('packages/component-library/DESIGN.md', 'Wrapper proliferation is expensive'),
+    'magic-number': ('documentation/DESIGN.md', 'CSS colors, spacing, radii, and typography come from `getToken()`'),
 }
 
 DEPRECATED: list[dict] = []   # filled from MANIFESTs by load_docs()
@@ -720,10 +595,8 @@ def scan_file(filepath: str) -> list[Finding]:
         return []
 
     findings: list[Finding] = []
-    findings.extend(check_inline_styles(source, filepath))
+    findings.extend(check_magic_numbers(source, filepath))
     findings.extend(check_styled_wrappers(source, filepath))
-    findings.extend(check_sx_accumulation(source, filepath))
-    findings.extend(check_maxheight_structural(source, filepath))
     findings.extend(check_multiple_primary_buttons(source, filepath))
     findings.extend(check_mui_imports(source, filepath))
     findings.extend(check_colors(source, filepath))
@@ -731,18 +604,12 @@ def scan_file(filepath: str) -> list[Finding]:
     findings.extend(check_gettoken_source(source, filepath))
     findings.extend(check_token_names(source, filepath))
     findings.extend(check_deprecated_props(source, filepath))
-    # Deduplicate nested-container vs sx-accumulation on same line
-    sx_lines = {f.line for f in findings if f.check == 'sx-accumulation'}
-    for f in check_nested_container_pattern(source, filepath):
-        if f.line not in sx_lines:
-            findings.append(f)
+    findings.extend(check_nested_container_pattern(source, filepath))
     findings = [f for f in findings if f.check not in DISABLED]
     for f in findings:
         if f.check in RULE_SOURCES:
             rel, phrase = RULE_SOURCES[f.check]
             f.source = f'{rel}: "{phrase}"'
-        elif f.check not in ('deprecated-prop', 'unknown-token', 'deprecated-token'):
-            f.source = CHECK_KIND.get(f.check, 'heuristic')
 
     return findings
 
@@ -910,6 +777,10 @@ def main() -> None:
         findings.extend(scan_path(p))
     if diff_path:
         tag_in_diff(findings, parse_added_lines(diff_path))
+        if '--changed-only' in sys.argv:
+            hidden = sum(1 for f in findings if f.in_diff is False)
+            findings = [f for f in findings if f.in_diff is not False]
+            notes.append(f'--changed-only: {hidden} finding(s) on lines this change did not touch were not reported')
     target = paths[0] if len(paths) == 1 else os.path.commonpath([os.path.abspath(p) for p in paths])
 
     if as_json:

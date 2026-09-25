@@ -31,7 +31,7 @@ It only points out problems; it never edits your code, pushes, or comments on yo
 
 ## 👛 Where it gets its rules
 
-Nothing is hand-copied into the skill. Every run pulls the current version of each of these:
+Nothing is hand-copied into the skill, and **every finding cites one of these documents**. If there's no rule in the docs, there's no comment. Every run pulls the current version of each of these:
 
 | | Source | What it's used for |
 |---|---|---|
@@ -41,9 +41,8 @@ Nothing is hand-copied into the skill. Every run pulls the current version of ea
 | 🍬 | `ts-grc` → `theme/tokens/semantic.ts` | The real token catalog, so it can tell whether `radius/card` actually exists (it doesn't 👀) and which tokens are deprecated |
 | 💝 | `ts-grc` → every component `*.MANIFEST.md` | When to use each GRC component, its "Don't" list, and deprecated props |
 | 🦢 | `Content_Strategy_Repo` → `style-guide/` | The content style guide: voice and tone, "Couldn't [action]" messages, error messages that say how to fix things. Falls back to Unify's content docs if you don't have access |
-| 🪞 | Skye Selbiger's GRC UX audit | A small set of patterns that aren't written down in ts-grc yet: button variants, drawer layout, empty states, where the AI sparkle icon goes. This is the only part stored inside the skill, and each rule cites its audit finding number |
 
-> 🦄 **It won't enforce outdated rules.** Each scanner check that enforces a written rule quotes the exact sentence it relies on. If that sentence is ever removed or reworded in the docs, the check **switches itself off** and the report says so.
+> 🦄 **It won't enforce outdated rules.** Each scanner check quotes the exact sentence it relies on. If that sentence is ever removed or reworded in the docs, the check **switches itself off** and the report says so.
 
 ---
 
@@ -85,7 +84,7 @@ Source: content style guide → patterns.md → Error messaging
 - 🌈 **All four sections always appear**, in the same order. An empty one just says `None.`
 - 🍓 **Every finding gives a `file:line`,** the rule it's based on, and what to change.
 - 🫧 **Big sections get grouped by theme** (for example `#### Disabled controls`), so 12 Cancel-button fixes become one bullet.
-- 🌼 **In PR mode, problems the PR didn't cause are labelled pre-existing,** so you're not asked to fix other people's code.
+- 🌼 **In PR mode, it only comments on lines the PR changed.** Existing code isn't reviewed, so you're never asked to fix someone else's work.
 - 🩰 **Hand-built UI that duplicates a GRC component gets a designer flag,** so UX sees it too.
 
 ---

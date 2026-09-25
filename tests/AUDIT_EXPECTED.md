@@ -2,28 +2,26 @@
 
 This is the LLM-level regression check. Run `/grc-design-review tests/fixtures/audit_rules.tsx` (Local mode) and compare the report against this list.
 
-**Pass bar:** every item below is reported (in 🔴 or 🟡) and nothing in the "must NOT flag" list is reported.
+**Pass bar:** every "must catch" item is reported (in 🔴 or 🟡), and nothing in the "must NOT flag" list is reported.
 
-## Must catch (14)
+## Must catch (9, all doc-backed)
 
 | # | Line | Planted issue | Source |
 |---|---|---|---|
-| 1 | 19 | "Log Response" trigger uses `variant="text"` for a non-cancel action | audit #92/#93 |
-| 2 | 19/21/27 | Label mismatch: trigger "Log Response" → title "Log Management Response" → submit "Add" | audit #199/#205 |
-| 3 | 27 | Submit button disabled while the input is empty | DESIGN.md → warn-after-the-fact; audit #68 |
-| 4 | 20–29 | Dialog has no `onClose`, so Esc does nothing | DESIGN.md → Dialog dismissal |
-| 5 | 35 | Destructive "Delete" confirm has no `color="error"` | audit #64/#98 |
-| 6 | 33 | Deletion title puts the name in the title instead of the template (`Delete [item]?` + quoted name in the body) | DESIGN.md → Deletion dialogs |
-| 7 | 39 | Icon-only delete `IconButton` has no `aria-label` | DESIGN.md → Accessibility |
-| 8 | 44–48 | Drawer title sits below a divider instead of next to the close button | audit #28/#41 |
-| 9 | 49 | Drawer body uses the gray section background | audit #41 |
-| 10 | 52 | Spinner for loading, with no skeleton and no `aria-live` | DESIGN.md → Loading state presentation |
-| 11 | 57–58 | "Learn more" comes before the primary action | audit #119/#128 |
-| 12 | 55–59, 61 | Empty state has no icon, **and** Export shows even when there's no data | audit #54; #120/#149 |
-| 13 | 64–65 | Trailing sparkle icon **and** raw hex `#9E64D5` (the old AI purple) | audit #32/#40; AGENTS.md → Design Tokens |
-| 14 | 67 | MUI theme string `'error.main'` used as a CSS colour | AGENTS.md → Design Tokens |
+| 1 | 27 | Submit button disabled while the input is empty | DESIGN.md → Prefer warn-after-the-fact |
+| 2 | 20–29 | Dialog has no `onClose`, so Esc does nothing | DESIGN.md → Dialog dismissal |
+| 3 | 35 | Destructive "Delete" confirm has no `color="error"` | DESIGN.md → Deletion dialogs |
+| 4 | 33 | Deletion title puts the name in the title instead of following the template | DESIGN.md → Deletion dialogs |
+| 5 | 39 | Icon-only delete `IconButton` has no accessible name | DESIGN.md → Accessible by default / Integration-level a11y questions |
+| 6 | 43–50 | Hand-rolled `Drawer` duplicates `GrcPageDrawer` | GrcPageDrawer MANIFEST |
+| 7 | 52 | Spinner for loading, with no skeleton | DESIGN.md → Loading state presentation |
+| 8 | 64 | Raw hex `#9E64D5` | DESIGN.md → Design values (Token-driven); AGENTS.md → Design Tokens |
+| 9 | 67 | MUI theme string `'error.main'` used as a CSS colour | AGENTS.md → Design Tokens |
+
+> Retired on 2026-09-25, when the skill became docs-only: label mismatch, `text` variant on the trigger, the drawer title/background, "Learn more" order, the empty-state icon, hiding Export when there's no data, and the trailing sparkle. These came from the UX audit, not from the docs. The skill should now **not** report them unless the docs add those rules.
 
 ## Must NOT flag
+- Anything without a doc citation (e.g. the retired audit-only items above).
 - Line 26 and line 34: Cancel is `variant="text"`, which is correct.
 - Line 45: the close `IconButton` has `aria-label="Close"`.
 - Imports: everything comes from `@workiva/unify` or the component library.

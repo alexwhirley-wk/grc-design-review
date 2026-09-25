@@ -36,7 +36,10 @@ python3 "$DIR/scripts/custom_styling_check.py" "$DIR/tests/fixtures/scanner_viol
 echo "2b. Diff awareness (--diff tags only added lines)"
 got=$(python3 "$DIR/scripts/custom_styling_check.py" "$DIR/tests/fixtures/scanner_violations.tsx" --json --docs "$DIR/tests/fixtures/docs" --diff "$DIR/tests/fixtures/partial.patch" \
   | python3 -c "import json,sys; print(sorted(f['line'] for f in json.load(sys.stdin) if f['in_diff']))")
-[ "$got" = "[11, 13, 20]" ] && echo "   PASS" || { echo "   FAIL got $got, expected [11, 13, 20]"; fail=1; }
+[ "$got" = "[13, 20]" ] && echo "   PASS" || { echo "   FAIL got $got, expected [13, 20]"; fail=1; }
+got=$(python3 "$DIR/scripts/custom_styling_check.py" "$DIR/tests/fixtures/scanner_violations.tsx" --json --docs "$DIR/tests/fixtures/docs" --diff "$DIR/tests/fixtures/partial.patch" --changed-only \
+  | python3 -c "import json,sys; print(sorted(f['line'] for f in json.load(sys.stdin)))")
+[ "$got" = "[13, 20]" ] && echo "   PASS --changed-only reports only changed lines" || { echo "   FAIL --changed-only got $got"; fail=1; }
 python3 "$DIR/scripts/custom_styling_check.py" /definitely/missing >/dev/null 2>&1; [ $? -eq 2 ] && echo "   PASS missing path → exit 2" || { echo "   FAIL missing path should exit 2"; fail=1; }
 
 echo "2c. Drift guard (a check whose source rule disappears gets disabled)"

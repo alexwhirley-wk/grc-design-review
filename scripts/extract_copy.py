@@ -5,7 +5,7 @@ so UI copy can be reviewed against the content style guide. Covers .ts as well a
 hooks, and config objects often hold user-facing strings.
 
 Usage:
-    python3 extract_copy.py <path> [<path> ...] [--diff <patch>] [--json]
+    python3 extract_copy.py <path> [<path> ...] [--diff <patch> [--changed-only]] [--json]
 
 With --diff, each message is marked in_diff (on a line the patch adds) or pre-existing.
 """
@@ -66,6 +66,8 @@ def main():
             out.append({'file': f, 'line': line, 'text': unescape(' '.join(m.group('text').split())),
                         'description': ' '.join(d.group('text').split()) if d else '', 'in_diff': in_diff})
 
+    if diff is not None and '--changed-only' in sys.argv:
+        out = [o for o in out if o['in_diff']]
     if as_json:
         print(json.dumps(out, indent=2))
         return
