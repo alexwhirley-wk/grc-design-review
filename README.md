@@ -8,7 +8,6 @@
    ╭─────────────────────────────────╮
    │  🔴  must fix                   │
    │  🟡  worth a chat               │
-   │  🟢  nice work, keep it up      │
    │  ℹ️   stuff I didn't look at    │
    ╰─────────────────────────────────╯
 ```
@@ -21,10 +20,20 @@ Point it at a **PR**, a **folder**, or **your current branch**. It will:
 
 1. **Grab the latest rules.** It fetches them fresh every run, so it never works from last month's docs.
 2. **Run a quick scanner.** A fast, repeatable pass for the things that can be checked mechanically: raw hex colours, made-up token names, `@mui` imports, deprecated props, and dialogs where Esc does nothing.
-3. **Read your code like a reviewer would.** It checks the things a scanner can't: loading and error states, disabled buttons, focus that gets lost after a dialog closes, and copy that doesn't match the style guide.
-4. **Write you a report** in the 🔴🟡🟢ℹ️ format. Every finding says which rule it's based on, so you can check it yourself.
+3. **Send in four specialist reviewers, side by side.** Each one reads a single rule source in full and checks the things a scanner can't:
+   - 🧭 **Product design** (`documentation/DESIGN.md`): loading and error states, dialog dismissal, disabled buttons, keyboard access
+   - 🎨 **Component library and tokens**: surfaces, borders, imports, prop design, real token names
+   - 📦 **MANIFESTs**: each touched component's "Don't" list, plus hand-built UI that a GRC component already covers
+   - ✍️ **Content style guide**: every user-facing string, with replacement text
+4. **Check their work.** It confirms every quoted rule really is in today's docs and that every finding sits on a line you changed. Then it merges duplicates and sets the final severity.
+5. **Write you a report** in the 🔴🟡ℹ️ format. Every finding says which rule it's based on, so you can check it yourself.
 
-It only points out problems; it never edits your code, pushes, or comments on your PR.
+6. **Suggest a next step** when you're reviewing a PR or branch:
+   - 🛠️ **Your own PR or branch:** apply the fixes
+   - 💬 **Someone else's PR:** post the findings as one review, with inline comments on the changed lines
+   - A review of a file or folder just ends with the report.
+
+It never edits your code, pushes, or comments on a PR until you say yes. Reviews are always shown to you as a full draft first.
 
 ---
 
@@ -47,7 +56,7 @@ Nothing is hand-copied into the skill, and **every finding cites one of these do
 
 ## 🌸 What the output looks like
 
-Every report has a short header followed by the same four sections, always in this order:
+Every report has a short header followed by the same three sections, always in this order:
 
 > **📋 Header.** Shows what was reviewed (a PR, a folder, or your branch), plus a **Rules** line recording exactly which version of each doc was used. That way you always know which rules a review was checked against.
 
@@ -59,16 +68,12 @@ Every report has a short header followed by the same four sections, always in th
 >
 > *e.g.* `validators.ts:14`: the error says what went wrong but not how to fix it. **Try:** `Control ID "{id}" isn't in this workspace. Check the ID and try again.`
 
-> **🟢 Looks good.** Tricky rules the change gets *right*, so good patterns get noticed too. 💖
->
-> *e.g.* The Mapping step warns after the fact instead of disabling Next.
-
 > **ℹ️ Not checked / notes.** What the review *didn't* cover: files it skipped, checks that couldn't run, and places where two documents disagree with each other.
 >
 > *e.g.* Shared components this PR only *uses* weren't reviewed.
 
 **A few things are always true:**
-- **All four sections always appear**, in the same order. An empty one just says `None.`
+- **All three sections always appear**, in the same order. An empty one just says `None.`
 - **Every finding gives a `file:line`,** the rule it's based on, and what to change.
 - **Big sections get grouped by theme** (for example `#### Disabled controls`), so 12 Cancel-button fixes become one bullet.
 - **In PR mode, it only comments on lines the PR changed.** Existing code isn't reviewed, so you're never asked to fix someone else's work.
@@ -100,7 +105,9 @@ In Claude Code:
 
 It runs start to finish without stopping to ask questions. The one exception: if you give it nothing to review, it asks what you'd like reviewed.
 
-> **Big folders get a lighter review.** The scanner and the copy check cover *every* file. The careful read, where it catches things like lost focus and swallowed errors, is capped at about 15 files per run. That's plenty for a normal PR. For a whole package (say, 100+ files), you'll get deeper results by reviewing a few subfolders one at a time:
+> **It runs four reviewer agents in parallel,** so a run uses more tokens than a single pass would, but it finishes sooner and each reviewer has room to read its docs in full.
+
+> **Big folders get a lighter review.** The scanner and the copy check cover *every* file. The careful read, where it catches things like lost focus and swallowed errors, is capped at about 30 files per run. That's plenty for a normal PR. For a whole package (say, 100+ files), you'll get deeper results by reviewing a few subfolders one at a time:
 > ```
 > /grc-design-review packages/audit-planning-v2/src/components
 > /grc-design-review packages/audit-planning-v2/src/timeline
@@ -115,7 +122,7 @@ It runs start to finish without stopping to ask questions. The one exception: if
 
 **The docs changed. Do I need to update anything?** Usually not; it picks up changes on the next run. If the docs remove a rule the scanner was enforcing, `tests/run_tests.sh` fails and tells you which check to update.
 
-**Can it fix things for me?** Not on its own. It only reviews. You can ask Claude to apply the fixes afterwards.
+**Can it fix things for me?** Yes, on your own code. At the end it offers to apply the fixes: all the 🔴s, plus whichever 🟡s you choose. It won't commit or push unless you ask.
 
 ---
 
@@ -123,7 +130,7 @@ It runs start to finish without stopping to ask questions. The one exception: if
 
 ```
 grc-design-review/
-├── SKILL.md                    # the review process and report format
+├── SKILL.md                    # the review process, the four reviewer briefs, and the report format
 ├── scripts/
 │   ├── fetch_context.sh        # fetches the docs, tokens, style guide, and PR files
 │   ├── custom_styling_check.py # the scanner (checks tied to the docs, switches off if a rule disappears)
