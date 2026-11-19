@@ -4,7 +4,7 @@
 
 A Claude Code skill for developers working in `Workiva/ts-grc`. Run it on your branch before you open a PR. It checks your front-end changes against the repository's own written rules, then offers to fix what it finds.
 
-Version 2.1.1. Owner: Alex Whirley. This is a separate skill from `grc-design-review` (v1), with a narrower, developer-focused scope. Both can be installed side by side.
+Version 2.2.0. Owner: Alex Whirley. This is a separate skill from `grc-design-review` (v1), with a narrower, developer-focused scope. Both can be installed side by side.
 
 ---
 
@@ -15,7 +15,7 @@ Version 2.1.1. Owner: Alex Whirley. This is a separate skill from `grc-design-re
 | **Dialogs, empty states, and toasts** | Dialog can't be closed with Esc, or closes on a backdrop click; dialog state that survives close and reopen; error from a dialog fired as a toast that renders behind it; outlined Cancel in a dialog footer; red Delete in an overflow menu; drawer used where the docs call for a dialog or route; missing success toast or empty state |
 | **react-intl** | Hard-coded user-facing strings; translated strings joined together or passed into another message; `formatMessage` without `defaultMessage` or `description`; dates formatted with `toLocaleDateString()` |
 | **Components and reuse** | Hand-rolled drawer, list, accordion, or button where a GRC or Unify component exists; deprecated components and props; a MANIFEST's "Don't" list. Existing shared components no doc names are listed as reuse candidates, without a severity |
-| **Design tokens** | Raw hex, `'error.main'` used as a colour, `borderRadius: 4`, `getToken` names that don't exist or are deprecated, `getToken` imported from the wrong package |
+| **Design tokens** | Raw hex, `'error.main'` used as a colour, `borderRadius: 4`, `padding: '12px'` or `style={{ margin: 16 }}` (theme steps like `p: 2` are fine), `getToken` names that don't exist or are deprecated, `getToken` imported from the wrong package |
 | **Component-library architecture** | Wrap vs. theme vs. build, `styled(GrcX)` wrappers and thin wrapper components, boolean-prop sprawl vs. variants and slots, direct `@mui` imports, barrel and export rules |
 
 **Not checked:** UI copy and tone, accessibility (including whether to disable a button), usability, how loading and error states look, layered containers, density and truncation, and general code quality. The report points you to the skill that covers each of these when it notices one.
@@ -84,7 +84,7 @@ In branch and PR mode it **only comments on lines you added or changed**. You're
 
 ```
 **feature/audt-123-import-dialog**
-*grc-ui-code-review v2.1.1 · Mode: Branch*
+*grc-ui-code-review v2.2.0 · Mode: Branch*
 *Rules: ts-grc checkout feature/audt-123-import-dialog @ 1a2b3c4 (2026-11-18), 0 commit(s) behind origin/master*
 
 ### 🔴 Must fix

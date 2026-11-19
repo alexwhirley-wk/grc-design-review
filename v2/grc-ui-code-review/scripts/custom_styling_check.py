@@ -273,6 +273,48 @@ LAYOUT_ONLY_PROPS = {
 
 MAGIC_PROPS = {'borderRadius', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing'}
 
+_SIDES = '(?:Top|Bottom|Left|Right|X|Y|Inline|Block|InlineStart|InlineEnd|BlockStart|BlockEnd)?'
+SPACING_PROP_RE = (r'(?<![\w$.])(padding' + _SIDES + '|margin' + _SIDES +
+                   r'|gap|rowGap|columnGap|p[xytblr]?|m[xytblr]?)')
+SPACING_STRING_RE = re.compile(SPACING_PROP_RE + r"""\s*:\s*(['"`])([^'"`]*?)\2""")
+SPACING_NUMBER_RE = re.compile(SPACING_PROP_RE + r'\s*:\s*(-?\d+(?:\.\d+)?)(?![\w.]|\s*[-*/+])')
+_LENGTH_RE = re.compile(r'-?(?:\d+\.?\d*|\.\d+)(px|rem|em)?$')
+
+
+def _hardcoded_spacing_string(value: str) -> bool:
+    """True when every part of a CSS spacing string ('12px', '8px 16px', '12') is a literal length and
+    not all are zero. Strings with var(), calc() or auto are left alone."""
+    parts = value.split()
+    if not parts or not all(_LENGTH_RE.match(p) for p in parts):
+        return False
+    return any(float(re.sub(r'(px|rem|em)$', '', p)) != 0 for p in parts)
+
+
+def check_hardcoded_spacing(source: str, filepath: str) -> list[Finding]:
+    """Literal spacing in sx or style objects. DESIGN.md → Design values: Token-driven.
+    Strings ('12px') are flagged in both. Bare numbers are flagged only in style={{}}, where they are
+    pixels; in sx a bare number (p: 2) is a theme spacing step and is left alone."""
+    findings = []
+    for m in re.finditer(r'(?<![a-zA-Z-])(sx|style)=\{', source):
+        obj_start = m.end()
+        if obj_start >= len(source) or source[obj_start] != '{':
+            continue
+        obj_text, _ = extract_brace_content(source, obj_start)
+        base = line_number_at(source, obj_start)
+        hits = [(sm.start(), sm.group(1), f"'{sm.group(3)}'")
+                for sm in SPACING_STRING_RE.finditer(obj_text) if _hardcoded_spacing_string(sm.group(3))]
+        if m.group(1) == 'style':
+            hits += [(nm.start(), nm.group(1), nm.group(2))
+                     for nm in SPACING_NUMBER_RE.finditer(obj_text) if float(nm.group(2)) != 0]
+        for pos, prop, value in sorted(hits):
+            findings.append(Finding(
+                file=filepath, line=base + obj_text[:pos].count('\n'), severity='violation',
+                element='(magic number)', message=f'`{prop}: {value}` is a hard-coded spacing value.',
+                suggestion="Use getToken('spacing/…') from semantic.ts, or a theme spacing step in sx (p: 2).",
+                check='magic-number',
+            ))
+    return findings
+
 
 def check_magic_numbers(source: str, filepath: str) -> list[Finding]:
     """Literal radius/typography values in sx or style objects. DESIGN.md → Design values: Token-driven."""
@@ -545,6 +587,7 @@ def scan_file(filepath: str) -> list[Finding]:
 
     findings: list[Finding] = []
     findings.extend(check_magic_numbers(source, filepath))
+    findings.extend(check_hardcoded_spacing(source, filepath))
     findings.extend(check_styled_wrappers(source, filepath))
     findings.extend(check_mui_imports(source, filepath))
     findings.extend(check_colors(source, filepath))

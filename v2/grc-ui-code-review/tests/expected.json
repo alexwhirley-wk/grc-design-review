@@ -93,5 +93,37 @@
       "violation",
       "magic-number"
     ]
+  ],
+  "scanner_spacing.tsx": [
+    [
+      8,
+      "violation",
+      "magic-number"
+    ],
+    [
+      9,
+      "violation",
+      "magic-number"
+    ],
+    [
+      10,
+      "violation",
+      "magic-number"
+    ],
+    [
+      11,
+      "violation",
+      "magic-number"
+    ],
+    [
+      12,
+      "violation",
+      "magic-number"
+    ],
+    [
+      13,
+      "violation",
+      "magic-number"
+    ]
   ]
 }

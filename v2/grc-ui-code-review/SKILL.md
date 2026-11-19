@@ -12,13 +12,13 @@ description: >-
   file or directory. Offers to apply the fixes to your own code.
   Usage: /grc-ui-code-review [<PR number or URL> | <path>]
 metadata:
-  version: "2.1.1"
+  version: "2.2.0"
   owner: Alex Whirley
 ---
 
 # GRC UI code review
 
-State `grc-ui-code-review v2.1.1` at the start of any output produced using this skill. In a review, the report's header line does this; don't print it twice.
+State `grc-ui-code-review v2.2.0` at the start of any output produced using this skill. In a review, the report's header line does this; don't print it twice.
 
 ## What this does
 
@@ -117,7 +117,7 @@ python3 "$SKILL_DIR/scripts/custom_styling_check.py" <files or dirs...> --docs "
 - Local mode: pass the paths, with no `--diff`.
 
 It catches, deterministically:
-- hard-coded radius and typography values in `sx`/`style`
+- hard-coded radius, typography, and spacing values in `sx`/`style`. For spacing, strings with units (`p: '12px'`) are flagged everywhere, and bare numbers only in `style` (where they're pixels); a bare number in `sx` (`p: 2`) is a theme spacing step and isn't flagged
 - raw hex/rgb/hsl colours, and MUI theme strings (`'text.secondary'`, `'divider'`) used as CSS values
 - `getToken('…')` names missing from the token catalog (🔴) or marked `@deprecated` there (🟡)
 - `getToken` imported from `@workiva/unify` instead of the component library
@@ -220,7 +220,7 @@ In Local mode, every line under the given path is in scope, and nothing outside 
 
 ```
 **<PR #N: title | path | branch name>**
-*grc-ui-code-review v2.1.1 · Mode: <mode> · Author: <login> (PR mode only)*
+*grc-ui-code-review v2.2.0 · Mode: <mode> · Author: <login> (PR mode only)*
 *Rules: <first line of SOURCES.txt>, plus one line per doc with when it last changed*
 
 ### 🔴 Must fix
