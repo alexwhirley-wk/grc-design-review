@@ -4,7 +4,7 @@
 
 A Claude Code skill for developers working in `Workiva/ts-grc`. Run it on your branch before you open a PR. It checks your front-end changes against the repository's own written rules, then offers to fix what it finds.
 
-Version 2.1.0. Owner: Alex Whirley. This is a separate skill from `grc-design-review` (v1), with a narrower, developer-focused scope. Both can be installed side by side.
+Version 2.1.1. Owner: Alex Whirley. This is a separate skill from `grc-design-review` (v1), with a narrower, developer-focused scope. Both can be installed side by side.
 
 ---
 
@@ -84,7 +84,7 @@ In branch and PR mode it **only comments on lines you added or changed**. You're
 
 ```
 **feature/audt-123-import-dialog**
-*grc-ui-code-review v2.1.0 · Mode: Branch*
+*grc-ui-code-review v2.1.1 · Mode: Branch*
 *Rules: ts-grc checkout feature/audt-123-import-dialog @ 1a2b3c4 (2026-11-18), 0 commit(s) behind origin/master*
 
 ### 🔴 Must fix
@@ -107,7 +107,7 @@ In branch and PR mode it **only comments on lines you added or changed**. You're
 
 On your own branch, PR, or files, it offers to apply the fixes. It fixes every 🔴, asks which 🟡s to take, and only touches lines in scope. Then it runs the package's lint, typecheck, and tests. It never commits or pushes unless you ask.
 
-On someone else's PR it only reports. To post a review, use `design-review`, which runs this skill alongside the UX reviewers.
+On someone else's PR it only reports. To post a review, use `design-review` from ux-skills, which runs the UX review skills and posts their reviews. It doesn't run this skill yet.
 
 ### Running the scanner alone
 

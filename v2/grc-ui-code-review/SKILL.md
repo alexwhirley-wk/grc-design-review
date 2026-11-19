@@ -12,13 +12,13 @@ description: >-
   file or directory. Offers to apply the fixes to your own code.
   Usage: /grc-ui-code-review [<PR number or URL> | <path>]
 metadata:
-  version: "2.1.0"
+  version: "2.1.1"
   owner: Alex Whirley
 ---
 
 # GRC UI code review
 
-State `grc-ui-code-review v2.1.0` at the start of any output produced using this skill. In a review, the report's header line does this; don't print it twice.
+State `grc-ui-code-review v2.1.1` at the start of any output produced using this skill. In a review, the report's header line does this; don't print it twice.
 
 ## What this does
 
@@ -51,7 +51,7 @@ Section names are where to look, not the rules themselves. If a named section is
 - **Layered containers, page composition, "one primary action per surface", button variants outside dialog and drawer footers, and *Typography & density*** (truncation, density).
 - **Naming and cleanup**, such as a redundant prop or a file name, unless a rule in this skill's sources states it.
 - **Code quality, logic, tests, and performance.** Those belong to a code review.
-- **Post reviews on other people's PRs.** On someone else's PR the report is for you to read. `design-review` runs this skill with the UX reviewers and handles posting.
+- **Post reviews on other people's PRs.** On someone else's PR the report is for you to read. To post a review, use `design-review`, which runs the UX review skills and handles posting. It doesn't run this skill yet.
 
 If you notice an issue in one of these areas, name the skill that covers it in one sentence under ℹ️. Don't review it.
 
@@ -220,7 +220,7 @@ In Local mode, every line under the given path is in scope, and nothing outside 
 
 ```
 **<PR #N: title | path | branch name>**
-*grc-ui-code-review v2.1.0 · Mode: <mode> · Author: <login> (PR mode only)*
+*grc-ui-code-review v2.1.1 · Mode: <mode> · Author: <login> (PR mode only)*
 *Rules: <first line of SOURCES.txt>, plus one line per doc with when it last changed*
 
 ### 🔴 Must fix
